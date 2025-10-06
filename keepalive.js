@@ -6,16 +6,30 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuração dos serviços a monitorar
-const SERVICES = [
-    {
-        name: 'WhatsApp Bot',
-        url: process.env.BOT_URL,
+// Gera serviços dinamicamente a partir da variável BOT_URL
+// Suporta múltiplas URLs separadas por vírgula
+const generateServices = () => {
+    const botUrls = process.env.BOT_URL || '';
+    
+    // Se não houver URL configurada, retorna array vazio
+    if (!botUrls.trim()) {
+        return [];
+    }
+    
+    // Divide por vírgula e remove espaços em branco
+    const urls = botUrls.split(',').map(url => url.trim()).filter(url => url);
+    
+    // Gera um serviço para cada URL
+    return urls.map((url, index) => ({
+        name: `Service ${index + 1}`,
+        url: url,
         interval: '*/12 * * * *', // A cada 12 minutos
         timeout: 60000 // 60 segundos
-    }
-    // Adicione mais serviços aqui se necessário
-];
+    }));
+};
+
+// Configuração dos serviços a monitorar
+const SERVICES = generateServices();
 
 // Estatísticas globais
 let stats = {
@@ -237,7 +251,7 @@ app.listen(PORT, '0.0.0.0', () => {
     // Lista serviços configurados
     SERVICES.forEach(service => {
         if (service.url) {
-            console.log(`• ${service.name}: ${service.url} (${service.interval})`);
+            console.log(`   • ${service.name}: ${service.url} (${service.interval})`);
         }
     });
 });
