@@ -11,7 +11,8 @@ Serviço automatizado que mantém seus projetos no Render sempre ativos, evitand
 - 🔄 Suporta múltiplos serviços simultaneamente
 - 📈 Tracking de uptime e response time
 - 🎯 Ping manual via API
-- 💯 100% gratuito no Render
+- 💯 **100% GRATUITO** no Render FREE
+- 🆓 Funciona perfeitamente no plano FREE
 
 ## 🚀 Deploy Rápido
 
@@ -41,6 +42,22 @@ cp .env.example .env
 # 4. Execute localmente
 npm start
 ```
+
+## ❗ IMPORTANTE - Plano FREE do Render
+
+### 🎯 Por que usar o Keep-Alive Service?
+
+- **⏰ Sleep Mode**: Render FREE dorme após 15 min de inatividade
+- **💯 Solução**: Este serviço faz ping a cada 12 minutos
+- **🎯 Resultado**: Seus bots ficam sempre ativos
+- **💰 Custo**: 100% gratuito no plano FREE
+- **🕑 Limite**: 750h/mês (suficiente para 1 serviço 24/7)
+
+### 📊 Cálculo de Horas:
+
+- **1 serviço ativo**: ~720h/mês ✅ (dentro do limite)
+- **2 serviços ativos**: ~1440h/mês ❌ (excede limite)
+- **Solução**: Use UptimeRobot externo para múltiplos serviços
 
 ## ⚙️ Configuração
 
@@ -98,7 +115,7 @@ https://seu-keep-alive.onrender.com/
 ### Endpoints Disponíveis
 
 | Endpoint | Método | Descrição |
-|----------|--------|-----------||
+|----------|--------|-----------|
 | `/` | GET | Dashboard com estatísticas completas |
 | `/ping-now` | POST | Força ping manual imediato |
 | `/stats` | GET | Apenas estatísticas |
@@ -116,14 +133,14 @@ curl -X POST https://seu-keep-alive.onrender.com/ping-now
 - [node-cron](https://www.npmjs.com/package/node-cron) - Agendamento de tarefas
 - [Axios](https://axios-http.com/) - Cliente HTTP
 - [Express](https://expressjs.com/) - Framework web
-- [Render](https://render.com/) - Hospedagem cloud
+- [Render](https://render.com/) - Hospedagem cloud (FREE)
 
 ## ⏱️ Intervalos de Ping
 
 ### Intervalos Recomendados
 
 | Serviço | Intervalo | Formato Cron | Horas/Mês |
-|---------|-----------|--------------|-----------||
+|---------|-----------|--------------|-----------|
 | **Padrão** | 12 minutos | `*/12 * * * *` | ~720h |
 | Econômico | 14 minutos | `*/14 * * * *` | ~720h |
 | Agressivo | 10 minutos | `*/10 * * * *` | ~720h |
@@ -193,13 +210,19 @@ O plano gratuito oferece **750 horas/mês**:
 
 **Solução**: Use UptimeRobot externo para manter ambos ativos
 
+### Bot ainda precisa reautenticar
+
+- ✅ **Normal**: Keep-alive evita sleep, não evita restart
+- ✅ Restarts são raros (deploy, falha do sistema)
+- ✅ Monitore via [dashboard do bot](https://github.com/seujao436/whatsapp-gemini-bot)
+
 ## 💡 Dicas e Otimizações
 
 ### Otimizar Custos
 
 1. **Use intervalos de 12-14 minutos** (evita excesso de requests)
 2. **Monitore apenas serviços essenciais**
-3. **Configure `autoDeploy: false`** no render.yaml
+3. **Configure `autoDeploy: false`** no render.yaml se necessário
 
 ### Melhorar Confiabilidade
 
@@ -213,17 +236,37 @@ O plano gratuito oferece **750 horas/mês**:
 - [Cron-job.org](https://cron-job.org/) - Cron jobs externos
 - [Render Cron Jobs](https://render.com/docs/cronjobs) - Pago, $1/mês
 
-## 🏗️ Estrutura do Projeto
+## 🏠 Estrutura do Projeto
 
 ```
 keep-alive-service/
 ├── keepalive.js     # Arquivo principal
 ├── package.json     # Dependências
-├── render.yaml      # Config do Render
+├── render.yaml      # Config do Render (FREE)
 ├── .env.example     # Exemplo de variáveis
 ├── .gitignore       # Arquivos ignorados
 └── README.md        # Este arquivo
 ```
+
+## 🔄 Como Usar Juntos
+
+### Passo a Passo Completo:
+
+1. **Deploy Bot WhatsApp**:
+   - Acesse: [whatsapp-gemini-bot](https://github.com/seujao436/whatsapp-gemini-bot)
+   - Clique "Deploy to Render"
+   - Configure `GEMINI_API_KEY`
+   - Copie a URL gerada
+
+2. **Deploy Keep-Alive**:
+   - Acesse: [keep-alive-service](https://github.com/seujao436/keep-alive-service)
+   - Clique "Deploy to Render"
+   - Configure `BOT_URL` com: `https://seu-bot.onrender.com/ping`
+
+3. **Resultado**:
+   - Bot fica sempre ativo (sem sleep)
+   - Reautenticação apenas em restarts (raros)
+   - 100% gratuito dentro do limite de 750h/mês
 
 ## 🤝 Contribuindo
 
@@ -243,6 +286,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 - [Bot WhatsApp + Gemini](https://github.com/seujao436/whatsapp-gemini-bot) - Bot de WhatsApp com IA
 - [UptimeRobot](https://uptimerobot.com/) - Alternativa de monitoramento
+- [TabNews](https://tabnews.com.br/) - Comunidade brasileira de tecnologia
 
 ## 📞 Suporte
 
@@ -253,5 +297,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ---
 
 **⭐ Mantenha seus projetos sempre ativos com este serviço!**
+
+**🆓 100% GRATUITO no plano FREE do Render!**
 
 **💡 Dica:** Deploy o keep-alive **depois** do bot para já ter a URL correta.
