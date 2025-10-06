@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 Keep-Alive Service Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            margin: 0; padding: 20px; color: #333;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .stats {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+        .card {
+            background: white; border-radius: 15px; padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1); text-align: center;
+        }
+        .card-icon { font-size: 2rem; margin-bottom: 10px; }
+        .card-value { font-size: 2rem; font-weight: bold; color: #28a745; }
+        .card-label { color: #666; font-size: 0.9rem; margin-top: 5px; }
+        .status {
+            padding: 8px 16px; border-radius: 20px; font-weight: bold;
+            font-size: 0.9rem; text-transform: uppercase;
+        }
+        .status.online { background: #d4edda; color: #155724; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.offline { background: #f8d7da; color: #721c24; }
+        .btn {
+            background: #28a745; color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; font-weight: bold;
+            cursor: pointer; margin: 5px; text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover { background: #218838; }
+        .btn.secondary { background: #6c757d; }
+        .btn.secondary:hover { background: #5a6268; }
+        .services-section {
+            background: white; border-radius: 15px; padding: 20px;
+            margin-bottom: 20px;
+        }
+        .service-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; margin: 10px 0; background: #f8f9fa;
+            border-radius: 8px; border-left: 4px solid #28a745;
+        }
+        .service-info h4 { margin: 0 0 5px 0; color: #333; }
+        .service-info p { margin: 0; color: #666; font-size: 0.9rem; }
+        .footer {
+            text-align: center; color: white; margin-top: 30px;
+            opacity: 0.8;
+        }
+        .footer a { color: white; }
+        .ping-history {
+            background: white; border-radius: 15px; padding: 20px;
+            margin-bottom: 20px;
+        }
+        .ping-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid #eee;
+        }
+        .ping-item:last-child { border-bottom: none; }
+        .ping-success { color: #28a745; font-weight: bold; }
+        .ping-failed { color: #dc3545; font-weight: bold; }
+        @media (max-width: 768px) {
+            .stats { grid-template-columns: 1fr; }
+            .header h1 { font-size: 2rem; }
+            .service-item { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Keep-Alive Service</h1>
+            <p>Monitoramento de Serviços 24/7</p>
+        </div>
+        
+        <div class="stats">
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <div class="card-value" id="total-pings">-</div>
+                <div class="card-label">Total de Pings</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">✅</div>
+                <div class="card-value" id="success-pings">-</div>
+                <div class="card-label">Pings Bem-sucedidos</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">❌</div>
+                <div class="card-value" id="failed-pings">-</div>
+                <div class="card-label">Pings Falhados</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">🎯</div>
+                <div class="card-value" id="success-rate">-</div>
+                <div class="card-label">Taxa de Sucesso</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">🕑</div>
+                <div class="card-value" id="uptime">-</div>
+                <div class="card-label">Tempo Ativo</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">⏰</div>
+                <div class="card-value" id="last-ping" style="font-size: 1rem;">-</div>
+                <div class="card-label">Último Ping</div>
+            </div>
+        </div>
+        
+        <div class="services-section">
+            <h3>🛠️ Serviços Monitorados</h3>
+            <div id="services-list">
+                <div class="service-item">
+                    <div class="service-info">
+                        <h4>Carregando serviços...</h4>
+                        <p>Verificando configurações</p>
+                    </div>
+                    <span class="status warning">Carregando</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" style="text-align: center;">
+            <h3>🛠️ Controles</h3>
+            <a href="#" class="btn" onclick="refresh()">🔄 Atualizar</a>
+            <a href="#" class="btn" onclick="forcePing()">📲 Forçar Ping</a>
+            <a href="/stats" class="btn secondary" target="_blank">📊 Stats JSON</a>
+            <a href="/health" class="btn secondary" target="_blank">🌡️ Health Check</a>
+        </div>
+        
+        <div class="ping-history">
+            <h3>📜 Histórico de Pings</h3>
+            <div id="ping-history">
+                <div class="ping-item">
+                    <span>Carregando histórico...</span>
+                    <span class="status warning">Aguarde</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Desenvolvido por <a href="https://github.com/seujao436">seujao436</a></p>
+            <p>Node.js • Cron Jobs • Render.com</p>
+        </div>
+    </div>
+    
+    <script>
+        let pingHistory = [];
+        
+        async function loadData() {
+            try {
+                const baseUrl = window.location.origin;
+                const response = await fetch(baseUrl);
+                
+                if (!response.ok) throw new Error('Erro na resposta');
+                
+                const data = await response.json();
+                
+                // Atualiza estatísticas principais
+                document.getElementById('total-pings').textContent = data.stats?.totalPings || 0;
+                document.getElementById('success-pings').textContent = data.stats?.successfulPings || 0;
+                document.getElementById('failed-pings').textContent = data.stats?.failedPings || 0;
+                document.getElementById('success-rate').textContent = data.stats?.successRate || '0%';
+                document.getElementById('uptime').textContent = data.uptime || '-';
+                
+                // Último ping
+                if (data.stats?.lastPing) {
+                    const date = new Date(data.stats.lastPing);
+                    document.getElementById('last-ping').textContent = date.toLocaleString('pt-BR');
+                } else {
+                    document.getElementById('last-ping').textContent = 'Nenhum ainda';
+                }
+                
+                // Atualiza lista de serviços
+                updateServicesList(data.services || {}, data.configuredServices || 0);
+                
+                // Adiciona ao histórico se houver novo ping
+                if (data.stats?.lastPing) {
+                    addToPingHistory(data.stats.lastPing, data.stats.successfulPings > (pingHistory.length > 0 ? pingHistory[0].success : 0));
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                document.getElementById('total-pings').textContent = 'Erro';
+            }
+        }
+        
+        function updateServicesList(services, configuredCount) {
+            const servicesList = document.getElementById('services-list');
+            
+            if (Object.keys(services).length === 0) {
+                servicesList.innerHTML = `
+                    <div class="service-item">
+                        <div class="service-info">
+                            <h4>Nenhum serviço configurado</h4>
+                            <p>Configure a variável BOT_URL para começar o monitoramento</p>
+                        </div>
+                        <span class="status warning">N/A</span>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            for (const [name, stats] of Object.entries(services)) {
+                const statusClass = stats.status === 'online' ? 'online' : 'offline';
+                const lastPing = stats.lastPing ? new Date(stats.lastPing).toLocaleString('pt-BR') : 'Nunca';
+                const avgResponse = stats.averageResponseTime ? Math.round(stats.averageResponseTime) + 'ms' : '-';
+                
+                html += `
+                    <div class="service-item">
+                        <div class="service-info">
+                            <h4>${name}</h4>
+                            <p>Último ping: ${lastPing} | Resp: ${avgResponse} | ${stats.successfulPings}/${stats.totalPings} sucessos</p>
+                        </div>
+                        <span class="status ${statusClass}">${stats.status}</span>
+                    </div>
+                `;
+            }
+            
+            servicesList.innerHTML = html;
+        }
+        
+        function addToPingHistory(timestamp, success) {
+            const item = {
+                time: timestamp,
+                success: success,
+                status: success ? 'Sucesso' : 'Falha'
+            };
+            
+            // Adiciona no início e mantém apenas últimos 10
+            pingHistory.unshift(item);
+            if (pingHistory.length > 10) {
+                pingHistory = pingHistory.slice(0, 10);
+            }
+            
+            updatePingHistory();
+        }
+        
+        function updatePingHistory() {
+            const historyDiv = document.getElementById('ping-history');
+            
+            if (pingHistory.length === 0) {
+                historyDiv.innerHTML = '<div class="ping-item"><span>Nenhum ping registrado ainda</span><span class="status warning">Aguardando</span></div>';
+                return;
+            }
+            
+            let html = '';
+            for (const item of pingHistory) {
+                const date = new Date(item.time).toLocaleString('pt-BR');
+                const statusClass = item.success ? 'ping-success' : 'ping-failed';
+                
+                html += `
+                    <div class="ping-item">
+                        <span>${date}</span>
+                        <span class="${statusClass}">${item.status}</span>
+                    </div>
+                `;
+            }
+            
+            historyDiv.innerHTML = html;
+        }
+        
+        async function forcePing() {
+            try {
+                const btn = event.target;
+                btn.disabled = true;
+                btn.textContent = '🔄 Enviando...';
+                
+                const response = await fetch('/ping-now', { method: 'POST' });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ Ping manual executado com sucesso!');
+                    setTimeout(loadData, 2000); // Recarrega dados após 2 segundos
+                } else {
+                    alert('❌ Erro ao executar ping: ' + (result.error || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                alert('❌ Erro na requisição: ' + error.message);
+            } finally {
+                const btn = event.target;
+                btn.disabled = false;
+                btn.textContent = '📲 Forçar Ping';
+            }
+        }
+        
+        function refresh() {
+            loadData();
+            location.reload();
+        }
+        
+        // Carrega dados iniciais
+        loadData();
+        
+        // Auto-refresh a cada 30 segundos
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
